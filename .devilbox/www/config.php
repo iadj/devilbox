@@ -7,7 +7,7 @@ error_reporting(-1);
 
 
 $DEVILBOX_VERSION = 'v0.9';
-$DEVILBOX_DATE = '2017-05-01';
+$DEVILBOX_DATE = '2017-05-07';
 
 //
 // Set Directories
@@ -22,15 +22,6 @@ $LOG_DIR	= dirname(dirname($CONF_DIR)) . DIRECTORY_SEPARATOR . 'log' . DIRECTORY
 require $LIB_DIR . DIRECTORY_SEPARATOR . '_iBase.php';
 require $LIB_DIR . DIRECTORY_SEPARATOR . '_Base.php';
 
-
-/**
- * TLD suffix for mass virtual hosts.
- *
- * This is currently hardcoded and must be changed here
- * as well as in the webserver config.
- * @var string
- */
-$TLD_SUFFIX	= 'loc';
 
 
 //
