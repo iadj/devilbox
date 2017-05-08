@@ -2,12 +2,12 @@
 // Measure time
 $TIME_START = microtime(true);
 
-// PHP Error reporting
+// Turn on all PHP errors
 error_reporting(-1);
 
 
 $DEVILBOX_VERSION = 'v0.9';
-$DEVILBOX_DATE = '2017-05-07';
+$DEVILBOX_DATE = '2017-05-08';
 
 //
 // Set Directories
