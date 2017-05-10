@@ -14,36 +14,35 @@ services:
 ### Global variables
 ###
 env:
-  DOCKER_COMPOSE_VERSION: 1.13.0
   matrix:
     # Test httpd
-    - SERVER=httpd VERSION=apache-2.2
-    - SERVER=httpd VERSION=apache-2.4
-    - SERVER=httpd VERSION=nginx-stable
-    - SERVER=httpd VERSION=nginx-mainline
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=httpd VERSION=apache-2.2
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=httpd VERSION=apache-2.4
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=httpd VERSION=nginx-stable
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=httpd VERSION=nginx-mainline
     # Test mysql
-    - SERVER=mysql VERSION=mysql-5.5
-    - SERVER=mysql VERSION=mysql-5.6
-    - SERVER=mysql VERSION=mysql-5.7
-    - SERVER=mysql VERSION=mysql-8.0
-    - SERVER=mysql VERSION=mariadb-5.5
-    - SERVER=mysql VERSION=mariadb-10.0
-    - SERVER=mysql VERSION=mariadb-10.1
-    - SERVER=mysql VERSION=mariadb-10.2
-    - SERVER=mysql VERSION=mariadb-10.3
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mysql-5.5
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mysql-5.6
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mysql-5.7
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mysql-8.0
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mariadb-5.5
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mariadb-10.0
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mariadb-10.1
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mariadb-10.2
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=mysql VERSION=mariadb-10.3
     # Test pgsql
-    - SERVER=pgsql VERSION=9.2
-    - SERVER=pgsql VERSION=9.3
-    - SERVER=pgsql VERSION=9.4
-    - SERVER=pgsql VERSION=9.5
-    - SERVER=pgsql VERSION=9.6
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=pgsql VERSION=9.2
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=pgsql VERSION=9.3
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=pgsql VERSION=9.4
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=pgsql VERSION=9.5
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=pgsql VERSION=9.6
     # Test php
-    - SERVER=php VERSION=php-fpm-5.4
-    - SERVER=php VERSION=php-fpm-5.5
-    - SERVER=php VERSION=php-fpm-5.6
-    - SERVER=php VERSION=php-fpm-7.0
-    - SERVER=php VERSION=php-fpm-7.1
-    - SERVER=php VERSION=hhvm-latest
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=php VERSION=php-fpm-5.4
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=php VERSION=php-fpm-5.5
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=php VERSION=php-fpm-5.6
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=php VERSION=php-fpm-7.0
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=php VERSION=php-fpm-7.1
+    - DOCKER_COMPOSE_VERSION=1.13.0 SERVER=php VERSION=hhvm-latest
 
 
 ###
