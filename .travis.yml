@@ -14,6 +14,7 @@ services:
 ### Global variables
 ###
 env:
+  DOCKER_COMPOSE_VERSION: 1.11.2
   matrix:
     # Test httpd
     - SERVER=httpd VERSION=apache-2.2
@@ -49,17 +50,22 @@ env:
 ### Berfore Install
 ###
 before_install:
-  # List versions
-  - docker version
-  - docker-compose version
+  # List info
   - whoami
   - groups
   - uname -a
+  # List versions
   - docker version
   - docker-compose version
   # Get newer docker version
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
+  # Get newer docker-compose version
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  # List versions again
   - docker version
   - docker-compose version
 
