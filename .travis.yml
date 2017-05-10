@@ -14,7 +14,7 @@ services:
 ### Global variables
 ###
 env:
-  DOCKER_COMPOSE_VERSION: 1.11.2
+  DOCKER_COMPOSE_VERSION: 1.13.0
   matrix:
     # Test httpd
     - SERVER=httpd VERSION=apache-2.2
