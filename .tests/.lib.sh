@@ -363,16 +363,20 @@ debilbox_test() {
 	echo "------------------------------------------------------------"
 	if ! _cnt="$( _test_curled_oks "${_oks}" )"; then
 		_ret="$(( _ret + 1 ))"
+		echo "[OK]: ${_cnt} / ${_oks} (failed)"
+	else
+		echo "[OK]: ${_cnt} / ${_oks} (good)"
 	fi
-	echo "[OK]: ${_cnt} / ${_oks}"
 	echo
 
 	echo "Count [ERR]'s on curl-ed url"
 	echo "------------------------------------------------------------"
 	if ! _cnt="$( _test_curled_err )"; then
 		_ret="$(( _ret + 1 ))"
+		echo "[ERR]: ${_cnt} / 0 (failed)"
+	else
+		echo "[ERR]: ${_cnt} / 0 (good)"
 	fi
-	echo "[ERR]: ${_cnt} / 0"
 	echo
 
 
@@ -462,7 +466,7 @@ _test_curled_err() {
 	_count="$( curl -q http://localhost/index.php 2>/dev/null | grep -c "${_find_err}" || true )"
 	echo "${_count}"
 
-	if [ "${_find_err}" != "0" ]; then
+	if [ "${_count}" != "0" ]; then
 		return 1
 	else
 		return 0
