@@ -96,7 +96,7 @@ wait_for() {
 				sleep 1
 				printf "."
 			done
-			printf "\n"
+			#printf "\n"
 			return 0
 		fi
 	fi
@@ -156,8 +156,8 @@ get_enabled_version_mysql() {
 	_default="$( grep -E '^MYSQL_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
 	echo "${_default}"
 }
-get_enabled_version_postgres() {
-	_default="$( grep -E '^POSTGRES_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
+get_enabled_version_pgsql() {
+	_default="$( grep -E '^PGSQL_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
 	echo "${_default}"
 }
 get_enabled_version_php() {
@@ -194,7 +194,7 @@ comment_all_dockers() {
 	# Comment out all enabled docker versions
 	run "sed -i'' \"s/^HTTPD_SERVER=/#HTTPD_SERVER=/g\" \"${DEVILBOX_PATH}/.env\""
 	run "sed -i'' \"s/^MYSQL_SERVER=/#MYSQL_SERVER=/g\" \"${DEVILBOX_PATH}/.env\""
-	run "sed -i'' \"s/^POSTGRES_SERVER=/#POSTGRES_SERVER=/g\" \"${DEVILBOX_PATH}/.env\""
+	run "sed -i'' \"s/^PGSQL_SERVER=/#PGSQL_SERVER=/g\" \"${DEVILBOX_PATH}/.env\""
 	run "sed -i'' \"s/^PHP_SERVER=/#PHP_SERVER=/g\" \"${DEVILBOX_PATH}/.env\""
 }
 
@@ -218,7 +218,7 @@ set_host_port_mysql() {
 }
 set_host_port_pgsql() {
 	_port="${1}"
-	run "sed -i'' \"s/^HOST_PORT_POSTGRES=.*/HOST_PORT_POSTGRES=${_port}/\" \"${DEVILBOX_PATH}/.env\""
+	run "sed -i'' \"s/^HOST_PORT_PGSQL=.*/HOST_PORT_PGSQL=${_port}/\" \"${DEVILBOX_PATH}/.env\""
 }
 
 ###
@@ -232,9 +232,9 @@ enable_docker_mysql() {
 	_docker_version="${1}"
 	run "sed -i'' \"s/#MYSQL_SERVER=${_docker_version}/MYSQL_SERVER=${_docker_version}/g\" \"${DEVILBOX_PATH}/.env\""
 }
-enable_docker_postgres() {
+enable_docker_pgsql() {
 	_docker_version="${1}"
-	run "sed -i'' \"s/#POSTGRES_SERVER=${_docker_version}/POSTGRES_SERVER=${_docker_version}/g\" \"${DEVILBOX_PATH}/.env\""
+	run "sed -i'' \"s/#PGSQL_SERVER=${_docker_version}/PGSQL_SERVER=${_docker_version}/g\" \"${DEVILBOX_PATH}/.env\""
 }
 enable_docker_php() {
 	_docker_version="${1}"
@@ -246,7 +246,7 @@ enable_docker_php() {
 
 ################################################################################
 #
-#   S T A R T / S T O P   T H E   D E V I L B O X
+#   S T A R T / S T O P / T E S T   T H E   D E V I L B O X
 #
 ################################################################################
 
@@ -264,19 +264,28 @@ devilbox_start() {
 	comment_all_dockers
 	enable_docker_httpd "${_new_httpd}"
 	enable_docker_mysql "${_new_mysql}"
-	enable_docker_postgres "${_new_pysql}"
+	enable_docker_pgsql "${_new_pysql}"
 	enable_docker_php "${_new_php}"
 
 	# Run
 	docker-compose up -d
 
-	# Wait for it to come up
-	wait_for 30 1
+	# Wait for http to return 200
+	max="90"
+	i=0
+	while [ $i -lt $max ]; do
+		if [ "$(  curl -s -o /dev/null -w '%{http_code}' http://localhost/index.php )" = "200" ]; then
+			break;
+		fi
+		wait_for 1 1
+		i=$(( i + 1 ))
+	done
 
-	# Show log/info
-	docker-compose logs
-	#docker-compose ps
+	# Wait another 10 sec for databases to come up
+	wait_for 10 1
+	echo
 }
+
 devilbox_stop() {
 	# Stop existing dockers
 	cd "${DEVILBOX_PATH}" || exit 1
@@ -307,7 +316,7 @@ debilbox_test() {
 	### Variables
 	###
 	_ret=0 # Final exit code
-	_oks=4 # Require this many [OK]'s on the page
+	_oks=17 # Require this many [OK]'s on the page
 
 
 	###
@@ -321,7 +330,7 @@ debilbox_test() {
 	echo "HTTPD: $(get_enabled_version_httpd)"
 	echo "PHP:   $(get_enabled_version_php)"
 	echo "MySQL: $(get_enabled_version_mysql)"
-	echo "PgSQL: $(get_enabled_version_postgres)"
+	echo "PgSQL: $(get_enabled_version_pgsql)"
 	echo
 
 	# Get actual versions
@@ -361,6 +370,17 @@ debilbox_test() {
 	fi
 	echo
 
+	echo "Count [ERR]'s on curl-ed url"
+	echo "------------------------------------------------------------"
+	if _cnt="$( _test_curled_err )"; then
+		echo "[ERR]: ${_cnt} of 0"
+	else
+		echo "[ERR]: ${_cnt} of ok"
+		_ret="$(( _ret + 1 ))"
+	fi
+	echo
+
+
 
 	###
 	### Final return
@@ -389,11 +409,17 @@ debilbox_test() {
 
 		return 1
 
-
 	fi
 
 	return 0
 }
+
+
+################################################################################
+#
+#   T E S T I N G   H E L P E R
+#
+################################################################################
 
 
 ###
@@ -422,23 +448,28 @@ _test_docker_compose() {
 ###
 _test_curled_oks() {
 	_oks="${1}"
+	_find_ok="dvlbox-ok"
 
-	max="20"
-	i=0
-	while [ $i -lt $max ]; do
-		if [ "$(  curl -s -o /dev/null -w '%{http_code}' http://localhost/index.php )" != "404" ]; then
-			break;
-		fi
-		sleep 1s
-		i=$(( i + 1 ))
-	done
-
-	# sleep (in case hhvm segfaulted and needs to be restarted)
-	sleep 10
-	_count="$( curl -q http://localhost/index.php 2>/dev/null | grep -c 'OK' || true )"
-	echo "${_count}"
+	_count="$( curl -q http://localhost/index.php 2>/dev/null | grep -c "${_find_ok}" || true )"
+	echo "${_oks}"
 
 	if [ "${_count}" != "${_oks}" ]; then
+		return 1
+	else
+		return 0
+	fi
+}
+
+###
+### Test [ERR]'s found on website
+###
+_test_curled_err() {
+	_find_err="dvlbox-err"
+
+	_count="$( curl -q http://localhost/index.php 2>/dev/null | grep -c "${_find_err}" || true )"
+	echo "${_find_err}"
+
+	if [ "${_find_err}" != "0" ]; then
 		return 1
 	else
 		return 0
