@@ -90,7 +90,6 @@ wait_for() {
 	# Sleep with debug output
 	if [ "${#}" = "2" ]; then
 		if [ "${2}" = "1" ]; then
-			printf "wait "
 			# shellcheck disable=SC2034
 			for i in $(seq 1 "${_time}"); do
 				sleep 1
@@ -281,8 +280,8 @@ devilbox_start() {
 		i=$(( i + 1 ))
 	done
 
-	# Wait another 10 sec for databases to come up
-	wait_for 10 1
+	# Wait another 30 sec for databases to come up
+	wait_for 30 1
 	echo
 }
 
@@ -362,24 +361,19 @@ debilbox_test() {
 
 	echo "Count [OK]'s on curl-ed url"
 	echo "------------------------------------------------------------"
-	if _cnt="$( _test_curled_oks "${_oks}" )"; then
-		echo "[OK]: ${_cnt} of ${_oks}"
-	else
-		echo "[ERR]: ${_cnt} of ${_oks}"
+	if ! _cnt="$( _test_curled_oks "${_oks}" )"; then
 		_ret="$(( _ret + 1 ))"
 	fi
+	echo "[OK]: ${_cnt} / ${_oks}"
 	echo
 
 	echo "Count [ERR]'s on curl-ed url"
 	echo "------------------------------------------------------------"
-	if _cnt="$( _test_curled_err )"; then
-		echo "[ERR]: ${_cnt} of 0"
-	else
-		echo "[ERR]: ${_cnt} of ok"
+	if ! _cnt="$( _test_curled_err )"; then
 		_ret="$(( _ret + 1 ))"
 	fi
+	echo "[ERR]: ${_cnt} / 0"
 	echo
-
 
 
 	###
@@ -408,7 +402,6 @@ debilbox_test() {
 		sudo find log -type f -exec sh -c 'echo "{}:\n-----------------"; cat "{}"; echo "\n\n"' \;
 
 		return 1
-
 	fi
 
 	return 0
@@ -451,7 +444,7 @@ _test_curled_oks() {
 	_find_ok="dvlbox-ok"
 
 	_count="$( curl -q http://localhost/index.php 2>/dev/null | grep -c "${_find_ok}" || true )"
-	echo "${_oks}"
+	echo "${_count}"
 
 	if [ "${_count}" != "${_oks}" ]; then
 		return 1
@@ -467,7 +460,7 @@ _test_curled_err() {
 	_find_err="dvlbox-err"
 
 	_count="$( curl -q http://localhost/index.php 2>/dev/null | grep -c "${_find_err}" || true )"
-	echo "${_find_err}"
+	echo "${_count}"
 
 	if [ "${_find_err}" != "0" ]; then
 		return 1
