@@ -56,7 +56,7 @@ runsu() {
 		printf "${_red}%s \$ ${_green}sudo ${_cmd}${_reset}\n" "${_user}"
 	fi
 
-	sudo "LANG=C LC_ALL=C ${_cmd}"
+	eval "sudo LANG=C LC_ALL=C ${_cmd}"
 }
 
 
@@ -147,21 +147,9 @@ get_data_mounts() {
 ###
 ### Default enabled Docker Versions
 ###
-get_enabled_version_httpd() {
-	_default="$( grep -E '^HTTPD_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
-	echo "${_default}"
-}
-get_enabled_version_mysql() {
-	_default="$( grep -E '^MYSQL_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
-	echo "${_default}"
-}
-get_enabled_version_pgsql() {
-	_default="$( grep -E '^PGSQL_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
-	echo "${_default}"
-}
-get_enabled_version_php() {
-	_default="$( grep -E '^PHP_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/^.*=//g' )"
-	echo "${_default}"
+get_enabled_versions() {
+	 grep -E '^[A-Z]+_SERVER=' "${DEVILBOX_PATH}/.env" | sed 's/_SERVER=/\t/g'
+
 }
 
 
@@ -298,8 +286,27 @@ devilbox_stop() {
 	IFS='
 	'
 	for d in ${_data_dirs}; do
-		runsu "rm -rf ${d}"
+		runsu "rm -rf ${d}" "1"
 	done
+}
+
+devilbox_show() {
+	###
+	### 1. Show Info
+	###
+	print_h2 "Info"
+
+	# Show wanted versions
+	echo "[Wanted] .env settings"
+	echo "------------------------------------------------------------"
+	get_enabled_versions
+	echo
+
+	# Get actual versions
+	echo "[Actual] http://localhost settings"
+	echo "------------------------------------------------------------"
+	curl -q http://localhost/index.php 2>/dev/null | grep -E '<h3>.*</h3>' | sed 's/.*<h3>//g' | sed 's/<\/h3>//g'
+	echo
 }
 
 
@@ -309,7 +316,6 @@ devilbox_stop() {
 #
 ################################################################################
 
-
 debilbox_test() {
 	###
 	### Variables
@@ -318,31 +324,12 @@ debilbox_test() {
 	_oks=17 # Require this many [OK]'s on the page
 
 
-	###
-	### 1. Show Info
-	###
-	print_h2 "1. Info"
-
-	# Show wanted versions
-	echo ".env settings"
-	echo "------------------------------------------------------------"
-	echo "HTTPD: $(get_enabled_version_httpd)"
-	echo "PHP:   $(get_enabled_version_php)"
-	echo "MySQL: $(get_enabled_version_mysql)"
-	echo "PgSQL: $(get_enabled_version_pgsql)"
-	echo
-
-	# Get actual versions
-	echo "http://localhost settings"
-	echo "------------------------------------------------------------"
-	curl -q http://localhost/index.php 2>/dev/null | grep -E '<h3>.*</h3>' | sed 's/.*<h3>//g' | sed 's/<\/h3>//g'
-	echo
 
 
 	###
 	### 2. Test docker-compose
 	###
-	print_h2 "2. docker-compose"
+	print_h2 "docker-compose"
 
 	echo "docker-compose ps"
 	echo "------------------------------------------------------------"
@@ -363,9 +350,9 @@ debilbox_test() {
 	echo "------------------------------------------------------------"
 	if ! _cnt="$( _test_curled_oks "${_oks}" )"; then
 		_ret="$(( _ret + 1 ))"
-		echo "[OK]: ${_cnt} / ${_oks} (failed)"
+		echo "[ERR]: ${_cnt} / ${_oks} (Not all 'dvlbox-ok' found)"
 	else
-		echo "[OK]: ${_cnt} / ${_oks} (good)"
+		echo "[OK]: ${_cnt} / ${_oks} (All 'dvlbox-ok' found)"
 	fi
 	echo
 
@@ -373,9 +360,9 @@ debilbox_test() {
 	echo "------------------------------------------------------------"
 	if ! _cnt="$( _test_curled_err )"; then
 		_ret="$(( _ret + 1 ))"
-		echo "[ERR]: ${_cnt} / 0 (failed)"
+		echo "[ERR]: ${_cnt} / 0 (Found some 'dvlbox-err')"
 	else
-		echo "[ERR]: ${_cnt} / 0 (good)"
+		echo "[OK]: ${_cnt} / 0 (No 'dvlbox-err' found)"
 	fi
 	echo
 

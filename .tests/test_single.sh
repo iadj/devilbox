@@ -93,6 +93,7 @@ fi
 ### Go
 ###
 devilbox_start "${_httpd}" "${_mysql}" "${_pgsql}" "${_php}" "${_head}"
+devilbox_show
 debilbox_test
 devilbox_stop
 
