@@ -305,7 +305,12 @@ devilbox_show() {
 	# Get actual versions
 	echo "[Actual] http://localhost settings"
 	echo "------------------------------------------------------------"
-	curl -q http://localhost/index.php 2>/dev/null | grep -E '<h3>.*</h3>' | sed 's/.*<h3>//g' | sed 's/<\/h3>//g'
+	curl -q http://localhost/index.php 2>/dev/null | \
+        grep -E 'circles' | \
+        grep -oE '<strong.*strong>.*\(.*\)' | \
+        sed 's/<strong>//g' | \
+        sed 's/<\/strong>.*(/\t/g' | \
+        sed 's/)//g'
 	echo
 }
 
