@@ -18,7 +18,7 @@ function page_header($title, $error = "", $breadcrumb = array(), $title2 = "") {
 	?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG; ?>" dir="<?php echo lang('ltr'); ?>">
-<?php /* devilbox inject */ include '../../../../include/head.php'; error_reporting(6135); ?>
+<?php /* devilbox edit */ echo loadClass('Html')->getHead(); error_reporting(6135); ?>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="Content-Script-Type" content="text/javascript">
 <meta name="robots" content="noindex">
@@ -36,7 +36,7 @@ function page_header($title, $error = "", $breadcrumb = array(), $title2 = "") {
 <?php } ?>
 
 <body class="<?php echo lang('ltr'); ?> nojs" onkeydown="bodyKeydown(event);" onclick="bodyClick(event);"<?php echo (isset($_COOKIE["adminer_version"]) ? "" : " onload=\"verifyVersion('$VERSION');\""); ?>>
-<?php /* devilbox inject */ include '../../../../include/navbar.php'; error_reporting(6135);?>
+<?php /* devilbox edit */ echo loadClass('Html')->getNavbar(); error_reporting(6135);?>
 <script type="text/javascript">
 document.body.className = document.body.className.replace(/ nojs/, ' js');
 var offlineMessage = '<?php echo js_escape(lang('You are offline.')); ?>';
@@ -136,5 +136,5 @@ function page_footer($missing = "") {
 </div>
 <script type="text/javascript">setupSubmitHighlight(document);</script>
 <?php
-/* devilbox inject */ include '../../../../include/footer.php'; error_reporting(6135);
+/* devilbox edit */ echo loadClass('Html')->getFooter(); error_reporting(6135);
 }
